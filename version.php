@@ -30,4 +30,4 @@ $plugin->release = "1.7.3";
 $plugin->component = "media_supervideo";
 $plugin->maturity = MATURITY_STABLE;
 
-$plugin->dependencies = array("mod_supervideo" => 2024021900);
+$plugin->dependencies = ["mod_supervideo" => 2024021900];
