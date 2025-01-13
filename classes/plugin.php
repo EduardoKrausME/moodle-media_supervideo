@@ -22,8 +22,9 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
+/**
+ * Class media_supervideo_plugin
+ */
 class media_supervideo_plugin extends core_media_player_external {
     /**
      * List supported urls.
@@ -32,8 +33,8 @@ class media_supervideo_plugin extends core_media_player_external {
      * @param array $options
      * @return array
      */
-    public function list_supported_urls(array $urls, array $options = array()) {
-        $result = array();
+    public function list_supported_urls(array $urls, array $options = []) {
+        $result = [];
         foreach ($urls as $url) {
             // If SuperVídeo support is enabled, URL is supported.
 
@@ -62,16 +63,14 @@ class media_supervideo_plugin extends core_media_player_external {
      * @return string
      */
     protected function embed_external(moodle_url $url, $name, $width, $height, $options) {
-        global $PAGE, $CFG;
+        global $PAGE;
 
         $uniqueid = uniqid();
 
-        echo "<link rel='stylesheet' type='text/css' href='{$CFG->wwwroot}/mod/supervideo/style.css'/>";
-        echo "<div id='link-{$uniqueid}'></div>";
-
         $PAGE->requires->js_call_amd("mod_supervideo/player_create", "resource_video",
-            [1, 0, "link-{$uniqueid}", $url->out(), false, true]);
+            [0, 0, "media_supervideo-{$uniqueid}", $url->out(), false, true]);
 
+        return "<div id=\"media_supervideo-{$uniqueid}\"></div>";
     }
 
     /**
