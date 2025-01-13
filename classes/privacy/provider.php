@@ -24,8 +24,6 @@
 
 namespace media_supervideo\privacy;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Privacy provider implementation for media_supervideo.
  */

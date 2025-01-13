@@ -22,8 +22,9 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
+/**
+ * Class media_supervideo_plugin
+ */
 class media_supervideo_plugin extends core_media_player_external {
     /**
      * List supported urls.
@@ -32,8 +33,8 @@ class media_supervideo_plugin extends core_media_player_external {
      * @param array $options
      * @return array
      */
-    public function list_supported_urls(array $urls, array $options = array()) {
-        $result = array();
+    public function list_supported_urls(array $urls, array $options = []) {
+        $result = [];
         foreach ($urls as $url) {
             // If SuperVídeo support is enabled, URL is supported.
 
