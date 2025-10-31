@@ -18,7 +18,7 @@
  * Main class for plugin 'media_supervideo'
  *
  * @package   media_supervideo
- * @copyright 2024 Eduardo kraus (http://eduardokraus.com)
+ * @copyright 2024 Eduardo kraus (@link https://eduardokraus.com)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -83,7 +83,7 @@ class media_supervideo_plugin extends core_media_player_external {
         $uniqueid = uniqid();
         $finalUrl = $url->out();
         $elementId = "media_supervideo-{$uniqueid}";
-        // Generate a course module id
+        // Generate a fake course module id
         $cmId = 9990000000000 + crc32($finalUrl);
         $supervideoview = supervideo_view::create($cmId);
 
