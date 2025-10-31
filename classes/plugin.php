@@ -18,14 +18,21 @@
  * Main class for plugin 'media_supervideo'
  *
  * @package   media_supervideo
- * @copyright 2024 Eduardo Kraus {@link https://eduardokraus.com}
+ * @copyright 2024 Eduardo kraus (@link https://eduardokraus.com)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+use mod_supervideo\analytics\supervideo_view;
 
 /**
  * Class media_supervideo_plugin
  */
 class media_supervideo_plugin extends core_media_player_external {
+
+    const YOUTUBE_PATTERN = '/youtu(\.be|be\.com)\/(watch\?v=|embed\/|live\/|shorts\/)?([a-z0-9_\-]{11})/i';
+    const VIMEO_PATTERN = "/vimeo.com\/(\d+)(\/(\w+))?/";
+    const M3U_PATTERN = '/^https?.*\.(m3u8)/i';
+
     /**
      * List supported urls.
      *
@@ -36,8 +43,8 @@ class media_supervideo_plugin extends core_media_player_external {
     public function list_supported_urls(array $urls, array $options = []) {
         $result = [];
         foreach ($urls as $url) {
+            $finalUrl = $url->out();
             // If SuperVídeo support is enabled, URL is supported.
-
             if (strpos($url->get_path(), "_videos") === 1) {
                 $result[] = $url;
             } else if (strpos($url->get_path(), ".mp4") > 1) {
@@ -45,6 +52,12 @@ class media_supervideo_plugin extends core_media_player_external {
             } else if (strpos($url->get_path(), ".mp3") > 1) {
                 $result[] = $url;
             } else if (strpos($url->get_path(), ".webm") > 1) {
+                $result[] = $url;
+            } else if (preg_match(self::YOUTUBE_PATTERN, $finalUrl)) {
+                $result[] = $url;
+            } else if (preg_match(self::VIMEO_PATTERN, $finalUrl)) {
+                $result[] = $url;
+            } else if (preg_match(self::M3U_PATTERN, $finalUrl)) {
                 $result[] = $url;
             }
         }
@@ -63,14 +76,98 @@ class media_supervideo_plugin extends core_media_player_external {
      * @return string
      */
     protected function embed_external(moodle_url $url, $name, $width, $height, $options) {
-        global $PAGE;
+        global $PAGE, $OUTPUT;
+
+        $config = get_config("supervideo");
 
         $uniqueid = uniqid();
+        $finalUrl = $url->out();
+        $elementId = "media_supervideo-{$uniqueid}";
+        // Generate a fake course module id
+        $cmId = 9990000000000 + crc32($finalUrl);
+        $supervideoview = supervideo_view::create($cmId);
 
-        $PAGE->requires->js_call_amd("mod_supervideo/player_create", "resource_video",
-            [0, 0, "media_supervideo-{$uniqueid}", $url->out(), false, true]);
+        $text = $OUTPUT->heading(
+            get_string("seu_mapa_view", "mod_supervideo") . " <span></span>",
+            3,
+            "main-view",
+            "seu-mapa-view"
+        );
+        $mapa = $OUTPUT->render_from_template("mod_supervideo/mapa", [
+            "style" => "",
+            "data-mapa" => base64_encode($supervideoview->mapa),
+            "text" => $text,
+        ]);
 
-        return "<div id=\"media_supervideo-{$uniqueid}\"></div>";
+        if (preg_match(self::YOUTUBE_PATTERN, $finalUrl, $output)) {
+            $PAGE->requires->js_call_amd("mod_supervideo/player_create", "youtube", [
+                $supervideoview->id,
+                $supervideoview->currenttime,
+                $elementId,
+                $output[3],
+                '',
+                1,
+                0,
+            ]);
+
+            $link = "<script src='https://www.youtube.com/iframe_api'></script>";
+            return $link . $OUTPUT->render_from_template("mod_supervideo/embed_div", ["elementid" => $elementId]) . $mapa;
+
+        } else if (preg_match(self::VIMEO_PATTERN, $finalUrl, $output)) {
+            $parametersvimeo = implode("&amp;", [
+                "pip=1",
+                "title=0",
+                "byline=0",
+                "title=1",
+                "autoplay=0",
+                "controls=1",
+            ]);
+
+            if (preg_match("/vimeo.com\/(\d+)(\/(\w+))?/", $finalUrl, $output)) {
+                if (isset($output[3])) {
+                    $finalUrl = "{$output[1]}?h={$output[3]}&pip{$parametersvimeo}";
+                } else {
+                    $finalUrl = "{$output[1]}?pip{$parametersvimeo}";
+                }
+            }
+
+            $PAGE->requires->js_call_amd("mod_supervideo/player_create", "vimeo", [
+                $supervideoview->id,
+                $supervideoview->currenttime,
+                $finalUrl,
+                $elementId,
+            ]);
+            return $OUTPUT->render_from_template("mod_supervideo/embed_vimeo", [
+                "elementid" => $elementId,
+                "vimeo_id" => $url,
+                "parametersvimeo" => $parametersvimeo,
+            ]) . $mapa;
+
+        } else {
+            $mustachedata = [
+                "elementid" => $elementId,
+                "videourl" => $finalUrl,
+                "autoplay" => 0,
+                "showcontrols" => 1,
+                "controls" => $config->controls,
+                "speed" => $config->speed,
+                "hls" => preg_match("/^https?.*\.(m3u8)/i", $finalUrl, $output),
+                "has_audio" => preg_match("/^https?.*\.(mp3|aac|m4a)/i", $finalUrl, $output),
+            ];
+            $PAGE->requires->js_call_amd(
+                "mod_supervideo/player_create",
+                $mustachedata["has_audio"] ? "resource_audio" : "resource_video",
+                [
+                    $supervideoview->id,
+                    $supervideoview->currenttime,
+                    $elementId,
+                    $mustachedata["hls"]
+                ]
+            );
+
+            return $OUTPUT->render_from_template("mod_supervideo/embed_div", $mustachedata) . $mapa;
+
+        }
     }
 
     /**
