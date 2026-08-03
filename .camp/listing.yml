@@ -1,0 +1,23 @@
+# (RFC §4.1). Authors update their listing with an ordinary commit; camp
+# ingests and hash-pins it at each tagged release. Listing for media_supervideo.
+
+name: "SuperVideo Filter Player"
+summary: "Play video links using the modern SuperVideo player."
+description: |
+  Play video links using the modern SuperVideo player.
+
+  This is a filter for Moodle that automatically transforms video links hosted on the platform into beautiful players, just like SuperVideo .
+
+  Key capabilities:
+  - Navigate to: Site Administration > Plugins > Filters > Media SuperVideo .
+  - Adjust the settings according to your Moodle environment's needs.
+  - Automatic Player: Automatically converts video links into integrated players.
+
+  Supported Moodle versions in the supplied plugin list: 3.8 - 5.0.
+
+labels:
+  - fully-free
+category: "video"
+links:
+  docs: https://github.com/EduardoKrausME/moodle-media_supervideo#readme
+  issues: https://github.com/EduardoKrausME/moodle-media_supervideo/issues
