@@ -22,6 +22,8 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+defined('MOODLE_INTERNAL') || die;
+
 $string['pluginname'] = 'SuperVideo Filter Player';
 $string['pluginname_help'] = 'Automatically creates a player for SuperVideo videos';
 $string['privacy:metadata'] = 'The SuperVideo will not store user data.';
