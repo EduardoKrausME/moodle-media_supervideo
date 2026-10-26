@@ -4,11 +4,11 @@ This is a filter for Moodle that automatically transforms video links hosted on 
 
 ## Requirements
 
-This plugin depends on the [**SuperVídeo**](https://moodle.org/plugins/mod_supervideo) module to function properly. Make sure to install and configure the **SuperVídeo** module before activating the **Media SuperVídeo** filter.
+This filter requires the [**SuperVídeo**](https://moodle.org/plugins/mod_supervideo) module for compatible playback.
 
 ## Configuration
 
-After installation and activation, you can configure the **Media SuperVídeo** filter:
+The **Media SuperVídeo** filter offers configuration options through Moodle administration:
 
 - Navigate to: **Site Administration** > **Plugins** > **Filters** > **Media SuperVídeo**.
 - Adjust the settings according to your Moodle environment's needs.
