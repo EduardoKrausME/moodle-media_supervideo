@@ -1,0 +1,19 @@
+{{!
+    @template media_supervideo/player
+    Isolated embedded media player. No user-specific data is rendered.
+}}
+<div id="{{elementid}}" class="media-supervideo-player my-2"
+     data-contextid="{{contextid}}" data-mediahash="{{mediahash}}" data-ticket="{{ticket}}"
+     data-providerhost="{{providerhost}}" data-vimeodnt="{{vimeodnt}}" data-type="{{type}}" data-value="{{value}}" data-name="{{name}}"
+     data-width="{{width}}" data-height="{{height}}" data-controls="{{controls}}" data-speed="{{speed}}">
+    <div class="media-supervideo-host"></div>
+    <a class="media-supervideo-fallback" href="{{{originalurlhtml}}}">{{name}}</a>
+    {{#ticket}}
+    <div class="media-supervideo-history mt-2" hidden>
+        <label for="{{elementid}}-progress">{{progresslabel}}</label>
+        <progress id="{{elementid}}-progress" max="100" value="0"></progress>
+        <span class="media-supervideo-percent">0%</span>
+        <div class="media-supervideo-map" aria-hidden="true"></div>
+    </div>
+    {{/ticket}}
+</div>
