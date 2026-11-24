@@ -1,5 +1,19 @@
 // This file is part of Moodle - http://moodle.org/
-// GPL v3 or later. Inspired by gaelb80's media_supervideo PR #1.
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+// Inspired by gaelb80's media_supervideo PR #1.
 define(['mod_supervideo/player_render', 'media_supervideo/history'], function(PlayerRender, History) {
     'use strict';
 
@@ -55,7 +69,7 @@ define(['mod_supervideo/player_render', 'media_supervideo/history'], function(Pl
         if (!root || players.has(root)) {
             return;
         }
-        var state = {destroy: function() {}, disposed: false};
+        var state = {destroy: function() {}, disposed: false, failed: false};
         players.set(root, state);
         var history = History.create(root);
         var host = root.querySelector('.media-supervideo-host');
@@ -74,9 +88,10 @@ define(['mod_supervideo/player_render', 'media_supervideo/history'], function(Pl
         observer.observe(document.documentElement, {childList: true, subtree: true});
 
         function fail() {
-            if (state.disposed) {
+            if (state.disposed || state.failed) {
                 return;
             }
+            state.failed = true;
             var destroy = state.destroy;
             state.destroy = function() {};
             history.stop();
@@ -86,7 +101,7 @@ define(['mod_supervideo/player_render', 'media_supervideo/history'], function(Pl
         }
 
         function ready() {
-            if (state.disposed) {
+            if (state.disposed || state.failed) {
                 return false;
             }
             host.hidden = false;
@@ -113,6 +128,7 @@ define(['mod_supervideo/player_render', 'media_supervideo/history'], function(Pl
                 var timer = null;
                 var player = new window.YT.Player(target, {
                     width: '100%', height: '100%', videoId: value,
+                    host: root.dataset.providerhost || 'https://www.youtube.com',
                     playerVars: {playsinline: 1, autoplay: 0, origin: window.location.origin},
                     events: {
                         onError: fail,
@@ -134,7 +150,11 @@ define(['mod_supervideo/player_render', 'media_supervideo/history'], function(Pl
                                     clearInterval(timer);
                                     timer = null;
                                 }
-                                history.pause(api.getCurrentTime(), api.getDuration());
+                                if (event.data === window.YT.PlayerState.ENDED) {
+                                    history.finish(api.getDuration(), api.getDuration());
+                                } else {
+                                    history.pause(api.getCurrentTime(), api.getDuration());
+                                }
                             }
                         }
                     }
@@ -170,7 +190,7 @@ define(['mod_supervideo/player_render', 'media_supervideo/history'], function(Pl
                 }).catch(fail);
                 player.on('play', function() { history.play(); });
                 player.on('pause', function(data) { history.pause(data.seconds, data.duration); });
-                player.on('ended', function(data) { history.pause(data.seconds, data.duration); });
+                player.on('ended', function(data) { history.finish(data.seconds, data.duration); });
                 player.on('timeupdate', function(data) { history.sample(data.seconds, data.duration); });
                 player.on('error', fail);
             }).catch(fail);
@@ -203,7 +223,7 @@ define(['mod_supervideo/player_render', 'media_supervideo/history'], function(Pl
         }, {once: true});
         media.addEventListener('playing', function() { history.play(); });
         media.addEventListener('pause', function() { history.pause(media.currentTime, media.duration); });
-        media.addEventListener('ended', function() { history.pause(media.currentTime, media.duration); });
+        media.addEventListener('ended', function() { history.finish(media.currentTime, media.duration); });
         media.addEventListener('timeupdate', function() {
             if (!media.paused && !media.seeking) {
                 history.sample(media.currentTime, media.duration);
@@ -246,6 +266,11 @@ define(['mod_supervideo/player_render', 'media_supervideo/history'], function(Pl
                 hls.on(window.Hls.Events.ERROR, function(event, data) {
                     if (data.fatal) {
                         fail();
+                    }
+                });
+                hls.on(window.Hls.Events.LEVEL_LOADED, function(event, data) {
+                    if (data.details && data.details.live) {
+                        history.stop();
                     }
                 });
                 hls.loadSource(value);

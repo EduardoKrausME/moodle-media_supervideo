@@ -63,6 +63,17 @@ jobs:
         sudo locale-gen en_AU.UTF-8
         echo "NVM_DIR=$HOME/.nvm" >> $GITHUB_ENV
 
+    - name: Add SuperVideo dependency
+      run: moodle-plugin-ci add-plugin --branch master EduardoKrausME/moodle-mod_supervideo
+
+    - name: JavaScript syntax and isolation tests
+      run: |
+        node --check plugin/amd/src/player.js
+        node --check plugin/amd/src/history.js
+        node --check plugin/amd/build/player.min.js
+        node --check plugin/amd/build/history.min.js
+        node --test plugin/tests/js/history.test.cjs
+
     - name: Install moodle-plugin-ci
       run: moodle-plugin-ci install --plugin ./plugin --db-host=127.0.0.1
       env:

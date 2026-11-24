@@ -54,6 +54,8 @@ class source {
             }
             return $id === null ? null : [
                 'type' => 'youtube', 'value' => $id, 'identity' => 'youtube:' . $id,
+                'providerhost' => strpos($host, 'youtube-nocookie.com') !== false ?
+                    'https://www.youtube-nocookie.com' : 'https://www.youtube.com',
             ];
         }
         if (in_array($host, ['vimeo.com', 'www.vimeo.com', 'player.vimeo.com'], true)) {

@@ -70,6 +70,7 @@ class media_supervideo_plugin extends core_media_player_external {
             'elementid' => $elementid,
             'name' => $title,
             'type' => $source['type'],
+            'providerhost' => $source['providerhost'] ?? '',
             'value' => $source['value'],
             'originalurl' => $url->out(false),
             'width' => max(0, (int)$width),
@@ -79,8 +80,12 @@ class media_supervideo_plugin extends core_media_player_external {
         ];
         // Media history is available only in actual course or activity contexts.
         // Do not embed user-specific data in formatted/cached content.
-        $context = $PAGE->context;
-        if (in_array($context->contextlevel, [CONTEXT_COURSE, CONTEXT_MODULE], true)) {
+        try {
+            $context = $PAGE->context;
+        } catch (coding_exception $e) {
+            $context = null;
+        }
+        if ($context && in_array($context->contextlevel, [CONTEXT_COURSE, CONTEXT_MODULE], true)) {
             $data['contextid'] = $context->id;
             $data['mediahash'] = hash('sha256', $source['identity']);
             $data['ticket'] = \media_supervideo\progress::ticket($context->id, $data['mediahash']);

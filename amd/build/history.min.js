@@ -1,5 +1,18 @@
 // This file is part of Moodle - http://moodle.org/
-// GPL v3 or later.
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 define(['core/ajax'], function(Ajax) {
     'use strict';
 
@@ -23,7 +36,7 @@ define(['core/ajax'], function(Ajax) {
             return Promise.resolve(Ajax.call([{
                 methodname: 'media_supervideo_history_' + method,
                 args: Object.assign({}, identity, params || {})
-            }], true, false, true, 0, true)[0]);
+            }])[0]);
         }
 
         function render(result) {
@@ -90,7 +103,7 @@ define(['core/ajax'], function(Ajax) {
             });
         }
 
-        function sample(time, duration, mark) {
+        function sample(time, duration, mark, finalSample) {
             if (disabled || stopped || !everPlayed || (mark && !playing)
                     || !Number.isFinite(time) || !Number.isFinite(duration)) {
                 return;
@@ -100,7 +113,7 @@ define(['core/ajax'], function(Ajax) {
             if (duration < 1 || duration > 604800 || time === lastTime) {
                 return;
             }
-            if (mark && Date.now() - lastRequest < 1000) {
+            if (mark && !finalSample && Date.now() - lastRequest < 1000) {
                 return;
             }
             lastTime = time;
@@ -123,6 +136,10 @@ define(['core/ajax'], function(Ajax) {
             },
             sample: function(time, duration) {
                 sample(time, duration, true);
+            },
+            finish: function(time, duration) {
+                sample(time, duration, true, true);
+                playing = false;
             },
             stop: function() {
                 stopped = true;
