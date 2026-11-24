@@ -2,7 +2,7 @@
 
 Published release entries are based on verified GitHub tags and publication dates. Pending changes are identified separately.
 
-## Unreleased (planned 1.8.0)
+## 1.8.0 - 2026-11-24
 
 - Added support for YouTube, Vimeo (including unlisted videos), HLS/M3U8, MP4, WebM, OGG and common audio formats.
 - Added personal playback history and resume for authenticated users in supported contexts, with independent media identities and signed context validation. No academic grade or completion is changed.
@@ -11,7 +11,7 @@ Published release entries are based on verified GitHub tags and publication date
 - Increased the minimum Moodle version from 4.1 to 4.2 and updated the SuperVideo dependency.
 - Build: 2026112401.
 
-**Changes since last published release:** [1.7.12...master](https://github.com/EduardoKrausME/moodle-media_supervideo/compare/1.7.12...master)
+**Comparison:** [1.7.12...1.8.0](https://github.com/EduardoKrausME/moodle-media_supervideo/compare/1.7.12...1.8.0)
 
 ## 1.7.12 - 2026-11-24
 
