@@ -176,7 +176,11 @@ define(['mod_supervideo/player_render', 'media_supervideo/history'], function(Pl
                     return;
                 }
                 var iframe = document.createElement('iframe');
-                iframe.src = 'https://player.vimeo.com/video/' + value;
+                var address = new URL('https://player.vimeo.com/video/' + value);
+                if (root.dataset.vimeodnt === '1') {
+                    address.searchParams.set('dnt', '1');
+                }
+                iframe.src = address.href;
                 iframe.title = root.dataset.name;
                 iframe.style.width = '100%';
                 iframe.style.height = '100%';

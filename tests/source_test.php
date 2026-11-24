@@ -23,6 +23,7 @@ namespace media_supervideo;
  * @covers \media_supervideo\source
  */
 final class source_test extends \advanced_testcase {
+    /** Verify valid provider and file URLs. */
     public function test_supported_urls(): void {
         $cases = [
             ['https://www.youtube.com/watch?feature=share&v=abcdefghijk', 'youtube', 'abcdefghijk'],
@@ -41,6 +42,7 @@ final class source_test extends \advanced_testcase {
         }
     }
 
+    /** Verify that unrelated hosts and invalid paths are not accepted. */
     public function test_rejects_unrecognised_urls(): void {
         foreach ([
             'https://notvimeo.com/123456',

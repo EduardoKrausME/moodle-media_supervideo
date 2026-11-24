@@ -23,6 +23,7 @@ namespace media_supervideo;
  * @covers \media_supervideo\progress
  */
 final class progress_test extends \advanced_testcase {
+    /** Verify that rendering or loading history does not create a record. */
     public function test_load_does_not_create_records(): void {
         global $DB;
         $this->resetAfterTest();
@@ -36,6 +37,7 @@ final class progress_test extends \advanced_testcase {
         $this->assertEquals(0, $DB->count_records('media_supervideo_view'));
     }
 
+    /** Verify isolation between different contexts, users and media identities. */
     public function test_media_user_and_context_isolation(): void {
         $this->resetAfterTest();
         $first = \context_course::instance($this->getDataGenerator()->create_course()->id);
@@ -55,6 +57,28 @@ final class progress_test extends \advanced_testcase {
         $this->assertNotSame(progress::ticket($first->id, $hash), progress::ticket($first->id, $hash2));
     }
 
+    /**
+     * A signed identity must not be reusable for another media or context.
+     */
+    public function test_external_service_rejects_forged_identity(): void {
+        $this->resetAfterTest();
+        $course = $this->getDataGenerator()->create_course();
+        $user = $this->getDataGenerator()->create_user();
+        $this->getDataGenerator()->enrol_user($user->id, $course->id);
+        $this->setUser($user);
+        $context = \context_course::instance($course->id);
+        $first = hash('sha256', 'youtube:abcdefghijk');
+        $second = hash('sha256', 'vimeo:123456');
+        $ticket = progress::ticket($context->id, $first);
+        $result = \media_supervideo\external\history::load($context->id, $first, $ticket);
+        $this->assertSame(0, $result['currenttime']);
+        $this->expectException(\invalid_parameter_exception::class);
+        \media_supervideo\external\history::load($context->id, $second, $ticket);
+    }
+
+    /**
+     * Seeking cannot mark all skipped segments as watched.
+     */
     public function test_resume_does_not_mark_skipped_segments(): void {
         $this->resetAfterTest();
         $context = \context_course::instance($this->getDataGenerator()->create_course()->id);

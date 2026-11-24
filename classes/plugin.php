@@ -70,7 +70,9 @@ class media_supervideo_plugin extends core_media_player_external {
             'elementid' => $elementid,
             'name' => $title,
             'type' => $source['type'],
-            'providerhost' => $source['providerhost'] ?? '',
+            'providerhost' => $source['type'] === 'youtube' && get_config('media_youtube', 'nocookie') ?
+                'https://www.youtube-nocookie.com' : ($source['providerhost'] ?? ''),
+            'vimeodnt' => $source['type'] === 'vimeo' && get_config('media_vimeo', 'donottrack') ? 1 : 0,
             'value' => $source['value'],
             'originalurl' => $url->out(false),
             'width' => max(0, (int)$width),
@@ -112,7 +114,9 @@ class media_supervideo_plugin extends core_media_player_external {
      * @return array
      */
     public function get_embeddable_markers() {
-        return [];
+        return ['youtube.com/', 'youtube-nocookie.com/', 'youtu.be/', 'vimeo.com/',
+            '.m3u8', '.mp4', '.mp3', '.webm', '.ogg', '.ogv', '.oga', '.m4a', '.aac',
+            '.m4v', '.wav', '.flac', '/_videos'];
     }
 
 
