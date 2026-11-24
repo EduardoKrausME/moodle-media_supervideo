@@ -30,6 +30,8 @@ namespace media_supervideo;
 final class progress_test extends \advanced_testcase {
     /**
      * Verify that rendering or loading history does not create a record.
+     *
+     * @covers \media_supervideo\progress
      */
     public function test_load_does_not_create_records(): void {
         global $DB;
@@ -46,6 +48,8 @@ final class progress_test extends \advanced_testcase {
 
     /**
      * Verify isolation between different contexts, users and media identities.
+     *
+     * @covers \media_supervideo\progress
      */
     public function test_media_user_and_context_isolation(): void {
         $this->resetAfterTest();
@@ -68,6 +72,9 @@ final class progress_test extends \advanced_testcase {
 
     /**
      * A signed identity must not be reusable for another media or context.
+     *
+     * @covers \media_supervideo\progress
+     * @covers \media_supervideo\external\history
      */
     public function test_external_service_rejects_forged_identity(): void {
         $this->resetAfterTest();
@@ -87,6 +94,8 @@ final class progress_test extends \advanced_testcase {
 
     /**
      * Seeking cannot mark all skipped segments as watched.
+     *
+     * @covers \media_supervideo\progress
      */
     public function test_resume_does_not_mark_skipped_segments(): void {
         $this->resetAfterTest();

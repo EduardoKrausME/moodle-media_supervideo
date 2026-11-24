@@ -28,6 +28,8 @@ namespace media_supervideo;
 final class source_test extends \advanced_testcase {
     /**
      * Verify valid provider and file URLs.
+     *
+     * @covers \media_supervideo\source
      */
     public function test_supported_urls(): void {
         $cases = [
@@ -49,6 +51,8 @@ final class source_test extends \advanced_testcase {
 
     /**
      * Verify that the rendered fallback preserves query parameters and escapes HTML.
+     *
+     * @covers \media_supervideo_plugin
      */
     public function test_fallback_url_is_escaped_once(): void {
         global $PAGE;
@@ -64,6 +68,8 @@ final class source_test extends \advanced_testcase {
 
     /**
      * Verify that unrelated hosts and invalid paths are not accepted.
+     *
+     * @covers \media_supervideo\source
      */
     public function test_rejects_unrecognised_urls(): void {
         foreach ([
