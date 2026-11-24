@@ -61,7 +61,7 @@ class media_supervideo_plugin extends core_media_player_external {
             return '';
         }
         $config = get_config('supervideo');
-        $elementid = html_writer::random_id('media-supervideo-');
+        $elementid = uniqid('media-supervideo-');
         $title = trim(strip_tags((string)$name));
         if ($title === '') {
             $title = get_string('support_supervideo', 'media_supervideo');
@@ -77,6 +77,15 @@ class media_supervideo_plugin extends core_media_player_external {
             'controls' => $config->controls ?? 'play,progress,current-time,mute,volume,settings,fullscreen',
             'speed' => $config->speed ?? '0.5,1,1.5,2',
         ];
+        // Media history is available only in actual course or activity contexts.
+        // Do not embed user-specific data in formatted/cached content.
+        $context = $PAGE->context;
+        if (in_array($context->contextlevel, [CONTEXT_COURSE, CONTEXT_MODULE], true)) {
+            $data['contextid'] = $context->id;
+            $data['mediahash'] = hash('sha256', $source['identity']);
+            $data['ticket'] = \media_supervideo\progress::ticket($context->id, $data['mediahash']);
+            $data['progresslabel'] = get_string('progresslabel', 'media_supervideo');
+        }
         $PAGE->requires->js_call_amd('media_supervideo/player', 'init', [$elementid]);
         return $OUTPUT->render_from_template('media_supervideo/player', $data);
     }

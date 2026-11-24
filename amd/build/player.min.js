@@ -1,6 +1,6 @@
 // This file is part of Moodle - http://moodle.org/
 // GPL v3 or later. Inspired by gaelb80's media_supervideo PR #1.
-define(['mod_supervideo/player_render'], function(PlayerRender) {
+define(['mod_supervideo/player_render', 'media_supervideo/history'], function(PlayerRender, History) {
     'use strict';
 
     var scripts = {};
@@ -57,6 +57,7 @@ define(['mod_supervideo/player_render'], function(PlayerRender) {
         }
         var state = {destroy: function() {}, disposed: false};
         players.set(root, state);
+        var history = History.create(root);
         var host = root.querySelector('.media-supervideo-host');
         var fallback = root.querySelector('.media-supervideo-fallback');
         var type = root.dataset.type;
@@ -65,6 +66,7 @@ define(['mod_supervideo/player_render'], function(PlayerRender) {
             if (!root.isConnected) {
                 observer.disconnect();
                 state.disposed = true;
+                history.stop();
                 state.destroy();
                 players.delete(root);
             }
@@ -75,8 +77,10 @@ define(['mod_supervideo/player_render'], function(PlayerRender) {
             if (state.disposed) {
                 return;
             }
-            state.destroy();
+            var destroy = state.destroy;
             state.destroy = function() {};
+            history.stop();
+            destroy();
             host.hidden = true;
             fallback.hidden = false;
         }
@@ -106,12 +110,39 @@ define(['mod_supervideo/player_render'], function(PlayerRender) {
                 }
                 var target = document.createElement('div');
                 host.appendChild(target);
+                var timer = null;
                 var player = new window.YT.Player(target, {
                     width: '100%', height: '100%', videoId: value,
                     playerVars: {playsinline: 1, autoplay: 0, origin: window.location.origin},
-                    events: {onError: fail}
+                    events: {
+                        onError: fail,
+                        onReady: function(event) {
+                            event.target.getIframe().title = root.dataset.name;
+                            history.attach({seek: function(time) { event.target.seekTo(time, true); }});
+                        },
+                        onStateChange: function(event) {
+                            var api = event.target;
+                            if (event.data === window.YT.PlayerState.PLAYING) {
+                                history.play();
+                                if (timer === null) {
+                                    timer = setInterval(function() {
+                                        history.sample(api.getCurrentTime(), api.getDuration());
+                                    }, 1000);
+                                }
+                            } else {
+                                if (timer !== null) {
+                                    clearInterval(timer);
+                                    timer = null;
+                                }
+                                history.pause(api.getCurrentTime(), api.getDuration());
+                            }
+                        }
+                    }
                 });
-                state.destroy = function() { player.destroy(); };
+                state.destroy = function() {
+                    clearInterval(timer);
+                    player.destroy();
+                };
             }).catch(fail);
             return;
         }
@@ -134,7 +165,13 @@ define(['mod_supervideo/player_render'], function(PlayerRender) {
                 host.appendChild(iframe);
                 var player = new window.Vimeo.Player(iframe);
                 state.destroy = function() { player.destroy().catch(function() {}); };
-                player.ready().catch(fail);
+                player.ready().then(function() {
+                    history.attach({seek: function(time) { return player.setCurrentTime(time); }});
+                }).catch(fail);
+                player.on('play', function() { history.play(); });
+                player.on('pause', function(data) { history.pause(data.seconds, data.duration); });
+                player.on('ended', function(data) { history.pause(data.seconds, data.duration); });
+                player.on('timeupdate', function(data) { history.sample(data.seconds, data.duration); });
                 player.on('error', fail);
             }).catch(fail);
             return;
@@ -161,6 +198,17 @@ define(['mod_supervideo/player_render'], function(PlayerRender) {
             media.load();
         };
         media.addEventListener('error', fail);
+        media.addEventListener('loadedmetadata', function() {
+            history.attach({seek: function(time) { media.currentTime = time; }});
+        }, {once: true});
+        media.addEventListener('playing', function() { history.play(); });
+        media.addEventListener('pause', function() { history.pause(media.currentTime, media.duration); });
+        media.addEventListener('ended', function() { history.pause(media.currentTime, media.duration); });
+        media.addEventListener('timeupdate', function() {
+            if (!media.paused && !media.seeking) {
+                history.sample(media.currentTime, media.duration);
+            }
+        });
         function enhance() {
             if (!ready()) {
                 return;

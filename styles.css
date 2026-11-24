@@ -1,0 +1,22 @@
+.media-supervideo-history progress {
+    width: 100%;
+    display: block;
+}
+.media-supervideo-map {
+    display: flex;
+    gap: 1px;
+    height: .5rem;
+    margin-top: .25rem;
+}
+.media-supervideo-map span {
+    flex: 1;
+    background: currentColor;
+    opacity: .16;
+}
+.media-supervideo-map span.watched {
+    opacity: 1;
+}
+.media-supervideo-host iframe {
+    border: 0;
+    display: block;
+}
