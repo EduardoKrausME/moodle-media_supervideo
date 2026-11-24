@@ -36,19 +36,10 @@ class media_supervideo_plugin extends core_media_player_external {
     public function list_supported_urls(array $urls, array $options = []) {
         $result = [];
         foreach ($urls as $url) {
-            // If SuperVídeo support is enabled, URL is supported.
-
-            if (strpos($url->get_path(), "_videos") === 1) {
-                $result[] = $url;
-            } else if (strpos($url->get_path(), ".mp4") > 1) {
-                $result[] = $url;
-            } else if (strpos($url->get_path(), ".mp3") > 1) {
-                $result[] = $url;
-            } else if (strpos($url->get_path(), ".webm") > 1) {
+            if (\media_supervideo\source::resolve($url) !== null) {
                 $result[] = $url;
             }
         }
-
         return $result;
     }
 
@@ -63,14 +54,31 @@ class media_supervideo_plugin extends core_media_player_external {
      * @return string
      */
     protected function embed_external(moodle_url $url, $name, $width, $height, $options) {
-        global $PAGE;
+        global $PAGE, $OUTPUT;
 
-        $uniqueid = uniqid();
-
-        $PAGE->requires->js_call_amd("mod_supervideo/player_create", "resource_video",
-            [0, 0, "media_supervideo-{$uniqueid}", $url->out(), false, true]);
-
-        return "<div id=\"media_supervideo-{$uniqueid}\"></div>";
+        $source = \media_supervideo\source::resolve($url);
+        if ($source === null) {
+            return '';
+        }
+        $config = get_config('supervideo');
+        $elementid = html_writer::random_id('media-supervideo-');
+        $title = trim(strip_tags((string)$name));
+        if ($title === '') {
+            $title = get_string('support_supervideo', 'media_supervideo');
+        }
+        $data = [
+            'elementid' => $elementid,
+            'name' => $title,
+            'type' => $source['type'],
+            'value' => $source['value'],
+            'originalurl' => $url->out(false),
+            'width' => max(0, (int)$width),
+            'height' => max(0, (int)$height),
+            'controls' => $config->controls ?? 'play,progress,current-time,mute,volume,settings,fullscreen',
+            'speed' => $config->speed ?? '0.5,1,1.5,2',
+        ];
+        $PAGE->requires->js_call_amd('media_supervideo/player', 'init', [$elementid]);
+        return $OUTPUT->render_from_template('media_supervideo/player', $data);
     }
 
     /**
