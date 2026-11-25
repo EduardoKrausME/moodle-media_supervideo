@@ -56,13 +56,22 @@ final class upgrade_test extends \advanced_testcase {
 
             $columns = $DB->get_columns($tablename);
             $this->assertCount(11, $columns);
-            foreach (['id', 'contextid', 'userid', 'currenttime', 'duration', 'percent',
-                    'lastsample', 'timecreated', 'timemodified'] as $name) {
+            $this->assertArrayHasKey('id', $columns);
+            $this->assertSame('R', $columns['id']->meta_type);
+            $this->assertTrue($columns['id']->primary_key);
+            $this->assertTrue($columns['id']->auto_increment);
+            $integerfields = [
+                'contextid', 'userid', 'currenttime', 'duration', 'percent',
+                'lastsample', 'timecreated', 'timemodified',
+            ];
+            foreach ($integerfields as $name) {
                 $this->assertArrayHasKey($name, $columns);
                 $this->assertSame('I', $columns[$name]->meta_type);
             }
             $this->assertArrayHasKey('mediahash', $columns);
             $this->assertArrayHasKey('map', $columns);
+            $this->assertSame('C', $columns['mediahash']->meta_type);
+            $this->assertSame('X', $columns['map']->meta_type);
 
             $index = new \xmldb_index('context_user_media', XMLDB_INDEX_UNIQUE, ['contextid', 'userid', 'mediahash']);
             $this->assertTrue($dbman->index_exists($table, $index));
@@ -70,6 +79,7 @@ final class upgrade_test extends \advanced_testcase {
             $this->assertTrue($dbman->index_exists($table, $index));
 
             $secret = get_config('media_supervideo', 'progresssecret');
+            $this->assertIsString($secret);
             $this->assertMatchesRegularExpression('/^[a-f0-9]{64}$/', $secret);
             $this->assertEquals($targetversion, get_config('media_supervideo', 'version'));
 
