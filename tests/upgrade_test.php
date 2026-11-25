@@ -28,6 +28,8 @@ namespace media_supervideo;
 final class upgrade_test extends \advanced_testcase {
     /**
      * Verify an upgrade from before playback history was introduced, including a retry.
+     *
+     * @covers ::xmldb_media_supervideo_upgrade
      */
     public function test_upgrade_creates_history_table(): void {
         global $CFG, $DB;
