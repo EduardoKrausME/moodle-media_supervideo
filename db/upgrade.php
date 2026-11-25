@@ -35,17 +35,17 @@ function xmldb_media_supervideo_upgrade($oldversion) {
     if ($oldversion < 2026112401) {
         $dbman = $DB->get_manager();
         $table = new xmldb_table('media_supervideo_view');
-        $table->add_field('id', XMLDB_TYPE_INT, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
-        $table->add_field('contextid', XMLDB_TYPE_INT, '10', null, XMLDB_NOTNULL, null, null);
-        $table->add_field('userid', XMLDB_TYPE_INT, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('contextid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('userid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
         $table->add_field('mediahash', XMLDB_TYPE_CHAR, '64', null, XMLDB_NOTNULL, null, null);
-        $table->add_field('currenttime', XMLDB_TYPE_INT, '10', null, XMLDB_NOTNULL, null, '0');
-        $table->add_field('duration', XMLDB_TYPE_INT, '10', null, XMLDB_NOTNULL, null, '0');
-        $table->add_field('percent', XMLDB_TYPE_INT, '3', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('currenttime', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('duration', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('percent', XMLDB_TYPE_INTEGER, '3', null, XMLDB_NOTNULL, null, '0');
         $table->add_field('map', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null);
-        $table->add_field('lastsample', XMLDB_TYPE_INT, '10', null, XMLDB_NOTNULL, null, '0');
-        $table->add_field('timecreated', XMLDB_TYPE_INT, '10', null, XMLDB_NOTNULL, null, '0');
-        $table->add_field('timemodified', XMLDB_TYPE_INT, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('lastsample', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
         $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
         $table->add_index('context_user_media', XMLDB_INDEX_UNIQUE, ['contextid', 'userid', 'mediahash']);
         $table->add_index('userid', XMLDB_INDEX_NOTUNIQUE, ['userid']);
